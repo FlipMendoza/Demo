@@ -1,0 +1,30 @@
+FROM centos
+
+RUN yum -y update
+
+RUN rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+COPY logstash.repo /etc/yum.repos.d/
+RUN yum -y install logstash sudo
+
+COPY jre-8u144-linux-x64.tar.gz /opt/
+WORKDIR /opt
+RUN tar xvf jre-8u144-linux-x64.tar.gz
+RUN alternatives --install /usr/bin/java java /opt/jre1.8.0_144/bin/java 1
+COPY tomcat.conf /usr/share/logstash/bin/
+
+RUN useradd -ms /bin/bash elastic
+RUN passwd -d elastic
+RUN echo ' elastic ALL=(ALL)	ALL' >> /etc/sudoers
+
+USER elastic
+WORKDIR /home/elastic
+
+RUN curl -L -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.2.tar.gz
+RUN tar -xvf elasticsearch-5.5.2.tar.gz
+
+ENV JAVA_HOME=/opt/jre1.8.0_144
+ENV PATH=$JAVA_HOME/bin:$PATH
+COPY EL.sh /EL.sh
+WORKDIR /
+
+CMD ["sh","EL.sh"]

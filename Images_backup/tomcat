@@ -1,0 +1,15 @@
+FROM tomcat:8.5
+
+RUN apt-get update
+RUN apt-get -y install vim
+COPY manager.xml /usr/local/tomcat/conf/Catalina/localhost/
+COPY tomcat-users.xml /usr/local/tomcat/conf/
+RUN curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.5.2-amd64.deb
+RUN dpkg -i filebeat-5.5.2-amd64.deb
+COPY filebeat.yml /etc/filebeat/
+COPY flip.sh /flip.sh
+WORKDIR /
+
+CMD ["sh","flip.sh"]
+
+
